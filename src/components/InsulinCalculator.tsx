@@ -1,35 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { calculateInsulinDose } from "@/lib/calculations";
+import SettingsDialog from "./SettingsDialog";
 
 const InsulinCalculator = () => {
   const { toast } = useToast();
   const [values, setValues] = useState({
     currentBG: "",
     targetBG: "",
-    icr: "",
-    isf: "",
     carbs: "",
   });
+
+  // Load ICR and ISF from localStorage or use defaults
+  const [icr, setIcr] = useState(() => localStorage.getItem("icr") || "");
+  const [isf, setIsf] = useState(() => localStorage.getItem("isf") || "");
+
   const [result, setResult] = useState<{
     mealDose: number;
     correctionDose: number;
     totalDose: number;
   } | null>(null);
 
+  // Save ICR and ISF to localStorage whenever they change
+  useEffect(() => {
+    if (icr) localStorage.setItem("icr", icr);
+  }, [icr]);
+
+  useEffect(() => {
+    if (isf) localStorage.setItem("isf", isf);
+  }, [isf]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Only allow numbers and decimal points
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setValues((prev) => ({ ...prev, [name]: value }));
     }
   };
 
+  const handleSettingsSave = (newIcr: string, newIsf: string) => {
+    setIcr(newIcr);
+    setIsf(newIsf);
+  };
+
   const handleCalculate = () => {
+    // Check if settings are configured
+    if (!icr || !isf) {
+      toast({
+        title: "Settings Required",
+        description: "Please configure your ICR and ISF values in settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate all inputs are present
     if (Object.values(values).some((value) => value === "")) {
       toast({
@@ -44,8 +71,8 @@ const InsulinCalculator = () => {
     const params = {
       currentBG: parseFloat(values.currentBG),
       targetBG: parseFloat(values.targetBG),
-      icr: parseFloat(values.icr),
-      isf: parseFloat(values.isf),
+      icr: parseFloat(icr),
+      isf: parseFloat(isf),
       carbs: parseFloat(values.carbs),
     };
 
@@ -73,7 +100,9 @@ const InsulinCalculator = () => {
 
   return (
     <div className="min-h-screen bg-medical-light p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto space-y-8 animate-fadeIn">
+      <div className="max-w-2xl mx-auto space-y-8 animate-fadeIn relative">
+        <SettingsDialog icr={icr} isf={isf} onSave={handleSettingsSave} />
+        
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-semibold text-medical-dark">Insulin Dose Calculator</h1>
           <p className="text-gray-600">Calculate your insulin dose based on your current readings and ratios</p>
@@ -99,28 +128,6 @@ const InsulinCalculator = () => {
                 name="targetBG"
                 placeholder="mg/dL"
                 value={values.targetBG}
-                onChange={handleInputChange}
-                className="text-lg"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="icr">Insulin to Carb Ratio (ICR)</Label>
-              <Input
-                id="icr"
-                name="icr"
-                placeholder="1:x grams"
-                value={values.icr}
-                onChange={handleInputChange}
-                className="text-lg"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="isf">Insulin Sensitivity Factor (ISF)</Label>
-              <Input
-                id="isf"
-                name="isf"
-                placeholder="mg/dL per unit"
-                value={values.isf}
                 onChange={handleInputChange}
                 className="text-lg"
               />
