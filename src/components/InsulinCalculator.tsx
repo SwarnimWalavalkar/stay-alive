@@ -1,0 +1,177 @@
+import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { calculateInsulinDose } from "@/lib/calculations";
+
+const InsulinCalculator = () => {
+  const { toast } = useToast();
+  const [values, setValues] = useState({
+    currentBG: "",
+    targetBG: "",
+    icr: "",
+    isf: "",
+    carbs: "",
+  });
+  const [result, setResult] = useState<{
+    mealDose: number;
+    correctionDose: number;
+    totalDose: number;
+  } | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // Only allow numbers and decimal points
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setValues((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleCalculate = () => {
+    // Validate all inputs are present
+    if (Object.values(values).some((value) => value === "")) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields to calculate insulin dose.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Convert strings to numbers
+    const params = {
+      currentBG: parseFloat(values.currentBG),
+      targetBG: parseFloat(values.targetBG),
+      icr: parseFloat(values.icr),
+      isf: parseFloat(values.isf),
+      carbs: parseFloat(values.carbs),
+    };
+
+    // Validate numbers are positive
+    if (Object.values(params).some((value) => value <= 0)) {
+      toast({
+        title: "Invalid Values",
+        description: "All values must be greater than 0.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const calculatedResult = calculateInsulinDose(params);
+      setResult(calculatedResult);
+    } catch (error) {
+      toast({
+        title: "Calculation Error",
+        description: error instanceof Error ? error.message : "An error occurred during calculation.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-medical-light p-4 sm:p-6 lg:p-8">
+      <div className="max-w-2xl mx-auto space-y-8 animate-fadeIn">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-semibold text-medical-dark">Insulin Dose Calculator</h1>
+          <p className="text-gray-600">Calculate your insulin dose based on your current readings and ratios</p>
+        </div>
+
+        <Card className="p-6 space-y-6 bg-white/80 backdrop-blur-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentBG">Current Blood Glucose</Label>
+              <Input
+                id="currentBG"
+                name="currentBG"
+                placeholder="mg/dL"
+                value={values.currentBG}
+                onChange={handleInputChange}
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="targetBG">Target Blood Glucose</Label>
+              <Input
+                id="targetBG"
+                name="targetBG"
+                placeholder="mg/dL"
+                value={values.targetBG}
+                onChange={handleInputChange}
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="icr">Insulin to Carb Ratio (ICR)</Label>
+              <Input
+                id="icr"
+                name="icr"
+                placeholder="1:x grams"
+                value={values.icr}
+                onChange={handleInputChange}
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="isf">Insulin Sensitivity Factor (ISF)</Label>
+              <Input
+                id="isf"
+                name="isf"
+                placeholder="mg/dL per unit"
+                value={values.isf}
+                onChange={handleInputChange}
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="carbs">Carbohydrates to Consume</Label>
+              <Input
+                id="carbs"
+                name="carbs"
+                placeholder="grams"
+                value={values.carbs}
+                onChange={handleInputChange}
+                className="text-lg"
+              />
+            </div>
+          </div>
+
+          <Button 
+            onClick={handleCalculate}
+            className="w-full bg-medical hover:bg-medical-dark text-white text-lg py-6"
+          >
+            Calculate Insulin Dose
+          </Button>
+        </Card>
+
+        {result && (
+          <Card className="p-6 bg-white/80 backdrop-blur-sm animate-fadeIn">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="text-center p-4 rounded-lg bg-medical-light">
+                  <p className="text-sm text-gray-600 mb-1">Meal Dose</p>
+                  <p className="text-2xl font-semibold text-medical">{result.mealDose.toFixed(1)} units</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-medical-light">
+                  <p className="text-sm text-gray-600 mb-1">Correction Dose</p>
+                  <p className="text-2xl font-semibold text-medical">{result.correctionDose.toFixed(1)} units</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-medical">
+                  <p className="text-sm text-white mb-1">Total Dose</p>
+                  <p className="text-2xl font-semibold text-white">{result.totalDose.toFixed(1)} units</p>
+                </div>
+              </div>
+              <p className="text-center text-sm text-gray-500 mt-4">
+                Please verify these calculations with your healthcare provider.
+              </p>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default InsulinCalculator;
