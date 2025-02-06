@@ -106,6 +106,12 @@ const InsulinCalculator = () => {
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-semibold text-medical-dark">Insulin Dose Calculator</h1>
           <p className="text-gray-600">Calculate your insulin dose based on your current readings and ratios</p>
+          {(icr || isf) && (
+            <div className="flex justify-center gap-4 mt-2 text-sm text-medical">
+              {icr && <p>ICR: 1:{icr}</p>}
+              {isf && <p>ISF: 1:{isf}</p>}
+            </div>
+          )}
         </div>
 
         <Card className="p-6 space-y-6 bg-white/80 backdrop-blur-sm">
