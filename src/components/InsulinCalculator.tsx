@@ -141,6 +141,8 @@ const InsulinCalculator = () => {
                 onChange={handleInputChange}
                 className="text-lg"
                 autoComplete="off"
+                inputMode="decimal"
+                type="number"
               />
             </div>
             <div className="space-y-2">
@@ -153,6 +155,8 @@ const InsulinCalculator = () => {
                 onChange={handleInputChange}
                 className="text-lg"
                 autoComplete="off"
+                inputMode="decimal"
+                type="number"
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
@@ -165,6 +169,8 @@ const InsulinCalculator = () => {
                 onChange={handleInputChange}
                 className="text-lg"
                 autoComplete="off"
+                inputMode="decimal"
+                type="number"
               />
             </div>
           </div>
