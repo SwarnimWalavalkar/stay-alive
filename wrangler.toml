@@ -1,2 +1,3 @@
 name = "stay-alive"
 main = "src/main.tsx"
+compatibility_date = "2025-02-09"
