@@ -2,6 +2,8 @@
   "name": "stay-alive",
   "version": "0.0.1",
   "type": "module",
+  "packageManager": "pnpm@9.14.2",
+  "main": "src/main.tsx",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
