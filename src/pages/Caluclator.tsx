@@ -1,7 +1,7 @@
 import InsulinCalculator from "@/components/InsulinCalculator";
 
-const Index = () => {
+const Calculator = () => {
   return <InsulinCalculator />;
 };
 
-export default Index;
+export default Calculator;

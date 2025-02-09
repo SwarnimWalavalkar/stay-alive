@@ -1,7 +1,6 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "stay-alive",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
